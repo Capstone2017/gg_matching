@@ -1,9 +1,0 @@
-https://www.airpair.com/javascript/posts/using-rethinkdb-with-expressjs
-https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
-https://hacks.mozilla.org/2016/01/webgl-off-the-main-thread/
-
-make it so for chat if you try to connect to yourself it fails
-if chat id is invalid it fails
-update dependants
-Keep JS running while page isnt selected:
-If somebody closes the page cause them to lose points
