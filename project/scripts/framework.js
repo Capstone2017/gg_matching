@@ -322,18 +322,18 @@ function connectChatWithUsername(username) {
 }
 
 Framework.displayChat = function() {
-	var chatbox = $('<div></div>').addClass('connection').addClass('active');
-    //var header = $('<h1></h1>').html('Chat with <strong>' + chatPeer.getPeerId() + '</strong>');
+	console.log($("#chatbox"));
+	if ($("#chatbox").length == 0) {
+	var chatbox = $('<div></div>').addClass('connection').addClass('active').attr("id","chatbox");
     var messages = $('<div><em>Peer connected.</em></div>').addClass('messages');
 	var textbox = $('<div><input type="text" id="chattextbox" placeholder="Enter Message"></div>');	
 	$(textbox).keypress(handleChatData);
-	//$(chatbox).append(header);
 	$(chatbox).append(messages);
 	$(chatbox).append(textbox);
 	$(chatbox).append($("<hr>"));
 	$(".chat_bar").append(chatbox);
 	$(".log").hide();
-
+	}
 }
 
 function handleChatData(data) {
@@ -342,17 +342,17 @@ function handleChatData(data) {
 			$(".messages").append("<br>");
 			$(".messages").append($("#display_name").text() + ": "); 
 			$(".messages").append( $("#chattextbox").val());
+			$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 1000);
+			console.log(chatPeer);
 			Framework.sendChatData({"type":"chat","messageFrom": $("#display_name").text(), "message":$("#chattextbox").val()});
 		    $("#chattextbox").val("");
-
 		}
 	}
 	else {
-		console.log(data.message);
 		$(".messages").append("<br>");
 		$(".messages").append( data.messageFrom + ": " + data.message);
+		$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 1000);
 	}
-
 }
 
 /**

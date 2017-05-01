@@ -46,3 +46,11 @@
 	
 	height: 15rem;	
 }
+
+.messages {
+	float:left;
+	width:1000px;
+	overflow-y: scroll;
+	height: 100px;
+
+}
