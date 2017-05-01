@@ -1,4 +1,4 @@
-
+// display login and logout buttons
 $(document).ready(function() {
 	$("#nav").prepend('<li><button class="g-signout2" >Sign out</button></li>');	
 	$(".g-signout2").on("click", signOut);
@@ -44,28 +44,31 @@ function onSignIn(googleUser) {
 		}
 	});
 };
+
+// Clear page so on logout you cant see the actions you cant perform
 function clearPage() {
 	$("#display_name").html("");
     $("#gameList").html("");
     $("#friendsList").html("");
     $("#gameLinks").html("");
-
 }
 
+// cleanup on logout
 function signOut() {
    	var auth2 = gapi.auth2.getAuthInstance();
 	clearPage();
    	auth2.signOut().then(function () {
    		console.log('User signed out.');
    	});
+	// delete framework components
 	if (Framework != undefined) Framework.onLogout();	
 	auth2.disconnect();
 			
 }
 
-
+// on initial login set a username
 function setUsername(id_token, profile) {
-	var username = prompt("Please select a username",
+	var username = prompt("Please select a username that isnt already taken",
             profile.getName());
 	$.ajax({
 		type: "POST",
@@ -81,17 +84,20 @@ function setUsername(id_token, profile) {
 			}
 		}
 	});
-
 }
 
+// show friends list
 function displayFriends(id_token,friends) {
 	
+	// show friends list if it doesnt already exist	
 	if ($("#friendsList").length == 1) { 
+
      	$("#friendsList").append($("<br>"));
 		$("#friendsList").append("Friends");
+		$("#friendsList").append($("<ul>").attr("id","name_list"));
 		$("#friendsList").append("<br>");
 		$("#friendsList").append("<input type='text' id='addFriend' placeholder='Add friend by username.'>");
-		$("#addFriend").keypress(function (e) {
+		$("#addFriend").keypress(function (e) { // add friend to list and database
 
         	if (e.which == 13) { // error if not logged in change to only trigger a
             	var friend = $("#addFriend").val();
@@ -104,21 +110,20 @@ function displayFriends(id_token,friends) {
                 	success : function(data) {
                     	console.log(data);
 						if (data.addFriend == true) {
-             				$("#friendsList").append($("<br>"));
-							$("#friendsList").append(data.username);
+							$("#name_list").append($("<li>").attr("id","name_list_" + data.username).html(data.username));
 						}
                 	}
 
             	})
         	}
     	});	
+		// display all friends in friends variable
 		$.each(friends, function( value ) {
-			$("#friendsList").append($("<br>"));
-		    $("#friendsList").append(friends[value].username);
+			$("#name_list").append($("<li>").attr("id","name_list_" + friends[value].username).html(friends[value].username));
 		});
 
 		$("#friendsList").append("<input type='text' id='delFriend' placeholder='Delete friend by username.'>");
-		$("#delFriend").keypress(function (e) {
+		$("#delFriend").keypress(function (e) { // delete friends from list and database
 
             if (e.which == 13) { // error if not logged in change to only trigger a
                 var friend = $("#delFriend").val();
@@ -131,18 +136,16 @@ function displayFriends(id_token,friends) {
                     success : function(data) {
                         console.log(data);
                         if (data.deleteFriend == true) {
-                            $("#friendsList").append($("<br>"));
-                            $("#friendsList").append("deleted " + data.username);
+							$("[id='name_list_" + data.username + "']").remove();
                         }
                     }
-
                 })
             }
         });
 	}
-
 }
 
+// append username to top right aswell as games
 function displayUsername(username, id_token, profile) {
 	if (username == "") {
 		setUsername(id_token, profile);
