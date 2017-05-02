@@ -29,13 +29,13 @@ Game.prototype.initializeTurnGame = function() {
 Game.prototype.setPlayer1 = function(id) {
     this.player1 = id;
 	this.player1_rating = Framework.getRating(id);
-    console.log("Player 1 = " + this.player1);
+    //console.log("Player 1 = " + this.player1);
 }
 
 Game.prototype.setPlayer2 = function(id) {
     this.player2 = id;
 	this.player2_rating = Framework.getRating(id);
-    console.log("Player 2 = " + id);
+    //console.log("Player 2 = " + id);
 }
 
 Game.prototype.getPlayer1 = function() {

@@ -49,7 +49,7 @@
 
 .messages {
 	float:left;
-	width:1000px;
+	width: 99vw;
 	overflow-y: scroll;
 	height: 100px;
 

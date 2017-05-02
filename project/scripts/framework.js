@@ -184,7 +184,7 @@ Framework.sendData = function(data) {
 
 Framework.sendChatData = function(data) {
 	// Can check here for specific person to send data to
-	console.log(data);
+	//console.log(data);
 	chatPeer.eachActiveConnection(function(c,$c) {
         c.send(data);
     });
@@ -289,7 +289,13 @@ function initializeButtons() {
 	$(".connection_bar").prepend('<p>Connect to a peer:<input type="text" id="rid" placeholder="Someone else\'s id"><input class="button" type="button" value="Connect" id="connect"></p>');
 	$(".chat_bar").append('<p>Chat with Peer <input type="text" id="chat_username" placeholder="Someone else\'s chat id"> <button id="chatConnect">Chat Connect</button></p>');		
 	$('#connect').click(function() {
-    	peer.createConnection("manualConnection",$("#rid").val());
+		console.log($('#rid').val());
+		if ( $('#rid').val() != "" ) {
+	    	peer.createConnection("manualConnection",$("#rid").val());
+		}
+		else {
+			alert("Enter valid PeerId or use Auto Connect");
+		}
     });
 	$("#chatConnect").click(function() {
 		console.log(chatPeer.getPeerId());
@@ -342,8 +348,8 @@ function handleChatData(data) {
 			$(".messages").append("<br>");
 			$(".messages").append($("#display_name").text() + ": "); 
 			$(".messages").append( $("#chattextbox").val());
-			$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 1000);
-			console.log(chatPeer);
+			$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 100);
+			//console.log(chatPeer);
 			Framework.sendChatData({"type":"chat","messageFrom": $("#display_name").text(), "message":$("#chattextbox").val()});
 		    $("#chattextbox").val("");
 		}
@@ -351,7 +357,7 @@ function handleChatData(data) {
 	else {
 		$(".messages").append("<br>");
 		$(".messages").append( data.messageFrom + ": " + data.message);
-		$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 1000);
+		$(".messages").animate({ scrollTop: $('.messages')[0].scrollHeight}, 100);
 	}
 }
 
@@ -409,7 +415,7 @@ function loadGameInfo() {
 
 // Handles communication for the framework between clients
 function handleFrameworkInfo(data) {
-	console.log(data);
+	//console.log(data);
     if (data.callFunction == "forceEndCountdown") {
         _forceEndCountdown();
     }
@@ -417,7 +423,7 @@ function handleFrameworkInfo(data) {
         _initializeRematch();
     }
 	if (data.callFunction == "shareUser") {
-		console.log("call _sh");
+		//console.log("call _sh");
 		_shareUser(data);
 	}
     // Could be issues with this being run before readyList cleared in other client

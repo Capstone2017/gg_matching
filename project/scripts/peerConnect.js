@@ -64,7 +64,11 @@ instance.createPeer = function(configs, rating) {
 
     // Log Errors
     peer.on('error', function(err) {
-        console.log(err);
+		
+		console.log(connectedPeers);
+		console.log(err);
+		delete connectedPeers[String(err).split(" ")[6]];
+		console.log(connectedPeers);
     });
 
     return peer;
@@ -117,17 +121,20 @@ instance.enterRankedConnectionQueue = function() {
 		(function(j) {
 			timeOutArray[j] = setTimeout(function() {
 				instance.attemptConnection(j*100);
+				if (j*100 == 10*100) {
+					alert("No peer to connect to");
+				}
 			}, j*1000);				 
 		})(i);
 	}
-	
+/*	
 	setTimeout( function () { 
 		instance.attemptConnection(100);
 	} , 1000);
 	setTimeout( function() {
 		instance.attemptConnection(1000);
 	}, 5000);
-	
+*/	
 }
 
 // Randomly connect to a valid peer
