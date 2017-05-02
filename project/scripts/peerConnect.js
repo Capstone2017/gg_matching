@@ -121,7 +121,7 @@ instance.enterRankedConnectionQueue = function() {
 		(function(j) {
 			timeOutArray[j] = setTimeout(function() {
 				instance.attemptConnection(j*100);
-				if (j*100 == 10*100) {
+				if (j*100 == 10*100 && !instance.isConnected()) {
 					alert("No peer to connect to");
 				}
 			}, j*1000);				 
