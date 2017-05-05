@@ -47,7 +47,12 @@ var sampleBl;
 var sampleG;
 var shotFlag;
 var combo;
+var copyCombo;
 var comboPoints;
+var loadedShotChangedFlag;
+var stackChangedFlag;
+var sendLinesFlag;
+var f;
 
 
 function Queue() {
@@ -83,6 +88,7 @@ Queue.prototype.dequeue = function() {
 $(document).ready(function() {
     Framework.defineHandleData(recieveData);
     Framework.defineGame(gameStart);
+	Framework.defineEndGameCleanUp(endGame);
     Framework.defineInitialState(function(){});
 });
 function gameStart() {  
@@ -104,24 +110,27 @@ function myGameArea(ri, iq, r, temp)  {
     },
     start : function() {
 		combo = [0,0,0,0,0,0];
+		copyCombo = [0,0,0,0,0,0];
+		sendLinesFlag = false;
+		f = false;
         instance.myAvatar = new component(AVATARW, AVATARH, "red", 225, 570, this);
         var leftBound = new component(WALLW, AREAH, "purple", 0, 0, this);
         var rightBound = new component(WALLW, AREAH, "purple", 480, 0, this);
         var floorBound = new component(AREAW, WALLW, "purple", 0, 550, this);
 		instance.blank = new component(AVATARW, AVATARH, "grey", 25, 650, this);
 		instance.loadedShot = new component(AVATARW, AVATARH, shot, 225, 500, this);
-		shotFlag = 0;
+		shotFlag = false;
         min = Math.ceil(CEIL);
         max = Math.floor(FLOOR);
         this.canvas.width = AREAW;
         this.canvas.height = AREAH;
         this.context = this.canvas.getContext("2d");
         $("body").append(this.canvas);
-        var queue = new Queue();
-        queue = iq(queue);
-        this.interval1 = setInterval(function() {
+        this.queue = new Queue();
+        queue = iq(this.queue);
+        this.interval = setInterval(function() {
 	    $(instance.canvas).stop(true,true);
-            updateGameArea(instance.myAvatar, leftBound, rightBound, floorBound, instance, queue, r);
+            updateGameArea(instance.myAvatar, leftBound, rightBound, floorBound, instance, this.queue, r);
         }, 20);
         for (var i = 0; i < ROWLENGTH; i++) {
             row1[i] = 0;
@@ -171,32 +180,42 @@ function readInput(instance) {
     if (keyCode == 37) {
 		e.preventDefault();
         instance.myAvatar.x -= 50;
-		instance.loadedShot.x -= 50;
-    }
+		if (!shotFlag) {
+			instance.loadedShot.x -= 50;
+    	}
+	}
     if (keyCode == 39) {
 		e.preventDefault();
         instance.myAvatar.x += 50;
-		instance.loadedShot.x += 50;
+		if (!shotFlag) {
+			instance.loadedShot.x += 50;
+		}
     }
     if (keyCode == 38) {
 		e.preventDefault();
-		shotFlag = 1;
+		shotFlag = true;
     }
     if (keyCode == 40) {
 		e.preventDefault();
-		swapShot(instance);
+		//swapShot(instance);
     }
 	if (keyCode == 32) {
 		e.preventDefault();
-		popCombo();
+		popCombo(instance);
 	}
     });
 
 }
 
-function popCombo() {
-	
-	return comboPoints;
+function popCombo(p) {
+	if (p.isP1) {
+		var t = p.context;
+		t.clearRect(0, 700, p.canvas.width, 50);	
+	}
+	for (var i = 0; i < combo.length; i++) {
+		combo[i] = 0;
+	}
+	sendLinesFlag = true;
 }
 
 function calcCombo() {
@@ -377,6 +396,7 @@ function updateGameArea(myAvatar, leftBound, rightBound, floorBound, p, queue, r
     if (p.isP1) p.clear();
 	else {
 		p.clearAva();
+		
 		p.loadedShot.update();
 	}
     myAvatar.update();
@@ -384,7 +404,7 @@ function updateGameArea(myAvatar, leftBound, rightBound, floorBound, p, queue, r
     rightBound.update();
     floorBound.update();
 	p.blank.update();
-	if (shotFlag == 1 && p.isP1) {
+	if (shotFlag && p.isP1) {
 		p.loadedShot.speedY = -10;
 	}
 	else {
@@ -477,7 +497,8 @@ function updateGameArea(myAvatar, leftBound, rightBound, floorBound, p, queue, r
         }	
 		p.loadedShot.x = p.myAvatar.x;
         shotFlag = 0;
-        p.loadedShot.y = 500;	
+        p.loadedShot.y = 500;
+		swapShot(p);	
 	}
     var j = p1.myAvatar.x;
 	
@@ -493,12 +514,33 @@ function updateGameArea(myAvatar, leftBound, rightBound, floorBound, p, queue, r
 	"row8":row8,
 	"row9":row9,
 	"row10":row10,
-	"row11":row11,
+	"combo":combo,
+	"comboPoints":comboPoints,
+	"lines":sendLinesFlag,
 	"ap":j,
+	"f":f,
 	"shoty":p1.loadedShot.y,
 	"shotx":p1.loadedShot.x,
 	"shotcolor":p1.loadedShot.color
     });
+
+	if (sendLinesFlag) {
+		sendLinesFlag = false;
+	}
+
+	//if (f) {
+	//	clearInterval(p.interval);
+	//}
+	
+	for (var i = 0; i < row11.length; i++) {
+		if (row10[i] != 0) {
+			clearInterval(p.interval);
+			Framework.getGame().setGameOver();
+			//Framework.rematch();	
+			f = true;
+		}
+	} 
+	
 }
 
 function recieveData(data) {
@@ -515,13 +557,54 @@ function recieveData(data) {
         drawRow(data.row9, 400, p2);
         drawRow(data.row10, 450, p2);
         //drawRow(data.row11, 500, p2);
-		p2.loadedShot.remove();
+		//p2.loadedShot.remove();
 		p2.myAvatar.x = data.ap;
-		p2.loadedShot.x = data.shotx;
-		p2.loadedShot.y = data.shoty;
+		if (data.shotx != p2.loadedShot.x) {
+            p2.loadedShot.remove();
+			p2.loadedShot.x = data.shotx;
+		}
+		if (data.shoty != p2.loadedShot.y) {
+            p2.loadedShot.remove();
+			p2.loadedShot.y = data.shoty;
+		}
 		p2.loadedShot.color = data.shotcolor;
+		 for (var i = 0; i < data.combo.length; i++) {
+            if (data.combo[i] != 0) {
+        if (data.combo[i] == 1) {
+            ctx.fillStyle = "blue";
+        } else if (data.combo[i] == 2) {
+            ctx.fillStyle = "brown";
+        } else if (data.combo[i] == 3) {
+            ctx.fillStyle = "yellow";
+        } else if (data.combo[i] == 4) {
+            ctx.fillStyle = "pink";
+        } else if (data.combo[i] == 5) {
+            ctx.fillStyle = "orange";
+        } else if (data.combo[i] == 6) {
+            ctx.fillStyle = "green";
+        }
+		
+		var c = p2.context;
+        c.clearRect(320,700, 100, 50);
+        c.fillRect((i*50)+25, 700, AVATARW, AVATARH);
+		c.font = "20px Arial";
+        c.fillText("Power: " + data.comboPoints, 320, 725);
+		}
+
+		if (data.f) {
+			clearInterval(p1.interval);
+			Framework.getGame().setWinner(Framework.getPeerId());
+			//Framework.rematch();
+		}
 		
     }
+	if (data.lines) {
+		for (var i = 0; i < data.comboPoints; i++) {
+			insertRow(p1.queue);
+		}
+	
+	}
+}
 }
 
 function updateOpponentPosition(p) {
@@ -541,12 +624,12 @@ function rows(p, queue) {
     drawRow(row9, 400, p);
     drawRow(row10, 450, p);
     //drawRow(row11, 500, p);
-    while (queue.size < 10) {
-        queue.enqueue(makeRow(min, max));
+    while (p.queue.size < 10) {
+        p.queue.enqueue(makeRow(min, max));
     }
     count += 1;
-    if (count == 250) {
-        insertRow(queue);
+    if (count == 500) {
+        insertRow(p.queue);
         count = 0; 
     }
 
@@ -614,6 +697,7 @@ function checkMatch(p) {
 			combo[i] = combo[i+1];
 		}
 		combo[5] = savedBlock;
+		//copyCombo[5] = savedBlock;
 		console.log(combo);
 	    for (var i = 0; i < combo.length; i++) {
 			if (combo[i] != 0) {
@@ -709,5 +793,31 @@ function drawRow(row, y, p) {
 
 
 function endGame() {
-
+	//clearInterval(p.interval);
+	//clearInterval(p.interval);
+	console.log("endgame");
+	//Framework.getGame().setWinner(Framework.getGame().getPlayer2());
+	console.log("loser is " + Framework.getPeerId());
+	//Framework.getGame().setGameOver();
+	//clearInterval(p.interval);
+	/*
+	var flag = false;
+	for (var i = 0; i < row11.length; i++) {
+		if (row11[i] != 0) {
+			flag = true;		
+		}
+	}	
+	//var cont = p.context;
+    //cont.fillStyle = "black";
+    //cont.fillRect(0,0, p.canvas.width, 550);
+	//cont.fillStyle = "white";
+	//cont.font = "50px Arial";
+	if (!flag) {
+		//cont.fillText("WIN", 200, 350); 
+		alert("WIN");
+		Framework.getGame().setWinner(Framework.getPeerId());
+	}
+	clearInterval(p.interval);
+	*/
 }
+

@@ -45,7 +45,6 @@ var chatPeer;
 var readyList = [];
 var globalGame; 
 var gameList = {};
-
 // Maybe setting functions can be done with the abstract game
 // When data is sent this is the function that recieves the data
 var tempHandleData;
@@ -106,6 +105,7 @@ Framework.endGameCleanUp = function() {
 }
 
 // Creates a Ready Up button and sets up its on click event to start the game when both players are ready.
+
 Framework.readyUp = function() {
 	var r = $('<button>');
 	r.attr("id", "readyUp");
@@ -118,7 +118,6 @@ Framework.readyUp = function() {
 			addToReadyList(Framework.getPeerId());
 			peer.askForPeersToAgree("readyUp");
 			startGame(readyList);	
-		
 			if (rematch_happened == false) shareUser();
 			$("#readyUp").off();
 			$("#readyUp").remove();
